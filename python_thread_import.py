@@ -20,8 +20,11 @@ def do_import():
     from rich import print
     setattr(thismodule, "print", print)
 
-    from myfuncs import redor
+    from myfuncs import redor, binding, titrate
     setattr(thismodule, "redor", redor)
+    setattr(thismodule, "binding", binding)
+    setattr(thismodule, "titrate", titrate)
+    
 
     import matplotlib.pyplot as plt
     setattr(thismodule, "plt", plt)
