@@ -4,7 +4,7 @@ PYCALC=$HOME/data/repositories/pycalc
 IPY=$HOME/miniconda/envs/pycalc/bin/ipython
 
 
-/opt/kitty/0.22.2/bin/kitty --single-instance \
+kitty-terminal --single-instance \
     --config $PYCALC/pycalc_kitty.conf \
     -d $PYCALC \
     $IPY -i --no-confirm-exit --no-banner -c  \
