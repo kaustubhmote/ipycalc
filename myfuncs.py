@@ -6,6 +6,7 @@ def redor(dc):
     """
     Calculates the REDOR dephasing profile for
     a given dipole-dople coupling
+    [ipycalc entry point]
 
     Parameters
     ----------
@@ -41,6 +42,7 @@ def binding(Kd, Mt, Lt):
         Calculates the concentration of a bound species
     given the Kd, total enzyme concentration and 
     total ligand concentration
+    [ipycalc entry point]
 
 
     Parameters
@@ -72,6 +74,7 @@ def titrate(Kd, Mt, L0, Lf):
     """
     titration for a system with a given
     Kd and total protein concentration
+    [ipycalc entry point]
 
     Parameters
     ----------

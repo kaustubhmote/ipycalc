@@ -3,7 +3,7 @@ from pygments.token import Token
 from IPython import get_ipython
 
 
-class MyPromptA(Prompts):
+class PromptBeforeImports(Prompts):
     def in_prompt_tokens(self, cli=None):
         return [(Token.OutPrompt, "‣ ")]
 
@@ -12,7 +12,7 @@ class MyPromptA(Prompts):
 
 
 
-class MyPromptB(Prompts):
+class PromptAfterImports(Prompts):
     def in_prompt_tokens(self, cli=None):
         return [(Token.Prompt, "‣ ")]
 
@@ -25,7 +25,7 @@ def set_prompt(name):
     ip = get_ipython()
 
     if name == "before":
-        ip.prompts = MyPromptA(ip)
+        ip.prompts = PromptBeforeImports(ip)
 
     if name == "after":
-        ip.prompts = MyPromptB(ip)
+        ip.prompts = PromptAfterImports(ip)

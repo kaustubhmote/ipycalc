@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PYCALC=$HOME/data/repositories/pycalc
+PYCALC=$HOME/data/repositories/ipycalc
 IPY=$HOME/miniconda/envs/pycalc/bin/ipython
 
 
@@ -9,4 +9,3 @@ kitty-terminal --single-instance \
     -d $PYCALC \
     $IPY -i --no-confirm-exit --no-banner -c  \
     "exec(open(\"python_thread_import.py\").read(), globals())"
-
