@@ -26,11 +26,11 @@ def do_import():
 
     setattr(thismodule, "print", print)
 
-    import myfuncs
+    import _functions
 
-    for function in dir(myfuncs):
+    for function in dir(_functions):
         try:
-            f = getattr(myfuncs, function)
+            f = getattr(_functions, function)
             if "[ipycalc entry point]" in f.__doc__:
                 setattr(thismodule, f.__name__, f)
         except (AttributeError, TypeError):
@@ -57,7 +57,7 @@ def do_import():
 
     setattr(thismodule, "print", print)
 
-    myfuncs = {
+    to_import = {
         "cos": np.cos,
         "sqrt": np.sqrt,
         "exp": np.exp,
@@ -72,32 +72,18 @@ def do_import():
         "linspace": np.linspace,
         "arange": np.arange,
         "x": np.linspace(-10, 10, 100),
-        "kb": 1.38064852e-23,
-        "R": 8.314,
-        "h": 6.62607015e-34,
-        "hbar": 1.054571817e-34,
-        "imshow": plt.imshow,
-        "contour": plt.contour,
-        "show": plt.show,
-        "plot": plt.plot,
-        "scatter": plt.scatter,
-        "symbols": sym.symbols,
-        "S": sym.S,
-        "imag": sym.I,
-        "spins": tins.Spins,
-        "dipole": tins.Dipole,
-        "jcoupling": tins.JCoupling,
-        "shift": tins.Shift,
-        "quadrupole": tins.Quadrupole,
-        "mesolve": qutip.mesolve,
-        "commutator": qutip.commutator,
+        "constants": {
+            "kb": 1.38064852e-23,
+            "R": 8.314,
+            "h": 6.62607015e-34,
+            "hbar": 1.054571817e-34,
+        },
     }
 
-    for k, v in myfuncs.items():
+    for k, v in to_import.items():
         setattr(thismodule, k, v)
 
     set_prompt("after")
 
 
 threading.Thread(target=do_import).start()
-
