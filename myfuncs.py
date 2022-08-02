@@ -37,6 +37,32 @@ def redor(dc):
     return time, ds_s0
 
 
+def redor_pulse_scaling(mas, plen):
+    """
+    Calculates the scaling factor associated with
+    a finite pulse length in REDOR
+    [ipycalc entry point]
+
+    Parameters
+    ----------
+    mas : float
+        MAS frequency in Hz
+    plen : float
+        length of the pi pulse in microseconds
+
+    Returns
+    -------
+    scaling : float
+        scaling factor
+    """
+
+    taur = 1e6 / mas
+    phi = 2 * plen / taur
+    scaling = np.cos(0.5 * np.pi * phi) / (1 - phi ** 2)
+
+    return scaling
+
+
 def binding(Kd, Mt, Lt):
     """
         Calculates the concentration of a bound species
