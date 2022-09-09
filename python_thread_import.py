@@ -1,89 +1,84 @@
-import threading
-from rich import traceback
+def main():
+    import threading
+    from rich import traceback
+    from ipython_prompt import set_prompt
 
-traceback.install()
+    traceback.install()
+    set_prompt("before")
 
-from ipython_prompt import set_prompt
-
-set_prompt("before")
+    threading.Thread(target=do_import).start()
 
 
 def do_import():
+    """
+    This functions does all the imports in a separate
+    nonblocking thread
 
-    import sys
+    """
+    import sys, toml
+    from matplotlib import use, style
+    from ipython_prompt import set_prompt
 
-    thismodule = sys.modules[__name__]
-
-    import numpy as np
-
-    setattr(thismodule, "np", np)
-
-    from matplotlib import use
+    this = sys.modules[__name__]
 
     use("module://matplotlib-backend-kitty")
+    style.use("dark_background")
 
-    from rich import print
+    cfg = toml.load("config.toml")
 
-    setattr(thismodule, "print", print)
-
-    import _functions
-
-    for function in dir(_functions):
-        try:
-            f = getattr(_functions, function)
-            if "[ipycalc entry point]" in f.__doc__:
-                setattr(thismodule, f.__name__, f)
-        except (AttributeError, TypeError):
-            pass
-
-    import matplotlib.pyplot as plt
-
-    setattr(thismodule, "plt", plt)
-    plt.style.use("dark_background")
-
-    import sympy as sym
-
-    setattr(thismodule, "sym", sym)
-
-    import qutip
-
-    setattr(thismodule, "qutip", qutip)
-
-    import tins
-
-    setattr(thismodule, "tins", tins)
-
-    from rich import print
-
-    setattr(thismodule, "print", print)
-
-    to_import = {
-        "cos": np.cos,
-        "sqrt": np.sqrt,
-        "exp": np.exp,
-        "pi": np.pi,
-        "π": np.pi,
-        "sin": np.sin,
-        "cos": np.cos,
-        "tan": np.tan,
-        "log": np.log,
-        "ln": np.log,
-        "log10": np.log10,
-        "linspace": np.linspace,
-        "arange": np.arange,
-        "x": np.linspace(-10, 10, 100),
-        "constants": {
-            "kb": 1.38064852e-23,
-            "R": 8.314,
-            "h": 6.62607015e-34,
-            "hbar": 1.054571817e-34,
-        },
-    }
-
-    for k, v in to_import.items():
-        setattr(thismodule, k, v)
+    import_modules(cfg["modules"], this)
+    import_functions(cfg["functions"], this)
+    import_constants(cfg["constants"], this)
+    import_custom_functions(this)
 
     set_prompt("after")
 
 
-threading.Thread(target=do_import).start()
+def import_custom_functions(global_scope):
+    import os
+
+    for f in os.listdir():
+        if f.startswith("_functions"):
+
+            functions = __import__(f.removesuffix(".py"))
+            for function in dir(functions):
+                try:
+                    f = getattr(functions, function)
+                    if "[ipycalc entry point]" in f.__doc__:
+                        setattr(global_scope, f.__name__, f)
+                except (AttributeError, TypeError):
+                    pass
+
+
+def import_modules(module_dict, global_scope):
+    import importlib
+
+    imported_submodules = {}
+
+    for alias, module in module_dict.items():
+        imported_submodules[alias] = importlib.import_module(module)
+
+    for alias, module in imported_submodules.items():
+        setattr(global_scope, alias, module)
+
+
+def import_functions(function_dict, global_scope):
+    import importlib
+
+    imported_functions = {}
+    for alias, module in function_dict.items():
+
+        m = importlib.import_module(module)
+        imported_functions[alias] = getattr(m, alias)
+
+    for alias, function in imported_functions.items():
+        setattr(global_scope, alias, function)
+
+
+def import_constants(constant_dict, global_scope):
+    for alias, constant in constant_dict.items():
+        setattr(global_scope, alias, eval(constant))
+
+
+if __name__ == "__main__":
+    main()
