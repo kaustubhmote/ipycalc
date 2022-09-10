@@ -1,4 +1,5 @@
-import numpy as np
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 
 def compound_interest(starting_amount, time_blocks, interest_per_block):
@@ -14,7 +15,6 @@ def compound_interest(starting_amount, time_blocks, interest_per_block):
         number of blocks (years/months/daays)
     interest_per_block : float
         interest per time block
-
     """
 
     interest = 1 + interest_per_block
@@ -43,15 +43,13 @@ def sip(seed=0, investment_per_time=0, time_blocks=0, interest_per_block=0):
     -------
     _type_
         _description_
-
-
     """
 
     interest = 1 + interest_per_block
 
     total_over_time = []
     total = seed
-    for i in range(time_blocks):
+    for _ in range(time_blocks):
         total = total + investment_per_time
         total = total * interest
         total_over_time.append(total)
