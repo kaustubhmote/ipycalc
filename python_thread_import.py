@@ -1,4 +1,16 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+
 def main():
+    """
+    Main thread
+
+    This imports some of the basic elements that
+    cannot be imported in a separate thread and
+    starts the function import in a separate thread
+
+    """
     import threading
     from rich import traceback
     from ipython_prompt import set_prompt
@@ -11,8 +23,9 @@ def main():
 
 def do_import():
     """
-    This functions does all the imports in a separate
-    nonblocking thread
+    This functions does imports the required
+    modules, functions and constants in a
+    separated nonblocking thread.
 
     """
     import sys, toml
@@ -35,6 +48,19 @@ def do_import():
 
 
 def import_custom_functions(global_scope):
+    """
+    Imports functions from any file in this
+    directory whose name starts with '_functions'.
+    Only functions that have '[ipycalc entry point]'
+    written somewhere in their docstrings are imported
+
+    Parameters
+    ----------
+    global_scope : module
+        the global module into which the functions should
+        be imported
+
+    """
     import os
 
     for f in os.listdir():
@@ -51,6 +77,19 @@ def import_custom_functions(global_scope):
 
 
 def import_modules(module_dict, global_scope):
+    """
+    Imports modules (and submodules) from the config
+    file.
+
+    Parameters
+    ----------
+    module_dict : dict
+        dictionary containing the module names
+    global_scope : module
+        the global module into which the functions should
+        be imported
+
+    """
     import importlib
 
     imported_submodules = {}
@@ -63,6 +102,20 @@ def import_modules(module_dict, global_scope):
 
 
 def import_functions(function_dict, global_scope):
+    """
+    Imports functions from the config file.
+
+    Parameters
+    ----------
+    functions_dict : dict
+        dictionary containing the function names and the 
+        name of the module from which they should be 
+        imported
+    global_scope : module
+        the global module into which the functions should
+        be imported
+
+    """
     import importlib
 
     imported_functions = {}
@@ -76,6 +129,23 @@ def import_functions(function_dict, global_scope):
 
 
 def import_constants(constant_dict, global_scope):
+    """
+    HERE BE DRAGONS! EVAL IS USED AND ALLOWS ARBITRARY CODE
+    EXECUTION
+
+    Imports constants from the config file.
+
+    Parameters
+    ----------
+    constant_dict : dict
+        dictionary containing the constant names and their
+        execution functions
+    global_scope : module
+        the global module into which the functions should
+        be imported
+
+    """
+
     for alias, constant in constant_dict.items():
         setattr(global_scope, alias, eval(constant))
 
