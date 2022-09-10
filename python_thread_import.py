@@ -41,7 +41,7 @@ def do_import():
 
     import_modules(cfg["modules"], this)
     import_functions(cfg["functions"], this)
-    import_constants(cfg["constants"], this)
+    import_constants(this)
     import_custom_functions(this)
 
     set_prompt("after")
@@ -128,26 +128,24 @@ def import_functions(function_dict, global_scope):
         setattr(global_scope, alias, function)
 
 
-def import_constants(constant_dict, global_scope):
+def import_constants(global_scope):
     """
-    HERE BE DRAGONS! EVAL IS USED AND ALLOWS ARBITRARY CODE
-    EXECUTION
-
-    Imports constants from the config file.
+    Imports all constants from a file called
+    '_funcs_default.py'
 
     Parameters
     ----------
-    constant_dict : dict
-        dictionary containing the constant names and their
-        execution functions
     global_scope : module
         the global module into which the functions should
         be imported
 
     """
 
-    for alias, constant in constant_dict.items():
-        setattr(global_scope, alias, eval(constant))
+    constants = __import__("_funcs_default") 
+
+    for c in dir(constants):
+        if not c.startswith("_"):
+            setattr(global_scope, c, getattr(constants, c))
 
 
 if __name__ == "__main__":
