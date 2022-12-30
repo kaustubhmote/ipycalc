@@ -61,7 +61,7 @@ def redor_pulse_scaling(mas, plen):
 
     taur = 1e6 / mas
     phi = 2 * plen / taur
-    scaling = np.cos(0.5 * np.pi * phi) / (1 - phi ** 2)
+    scaling = np.cos(0.5 * np.pi * phi) / (1 - phi**2)
 
     return scaling
 
@@ -69,7 +69,7 @@ def redor_pulse_scaling(mas, plen):
 def binding(Kd, Mt, Lt):
     """
         Calculates the concentration of a bound species
-    given the Kd, total enzyme concentration and 
+    given the Kd, total enzyme concentration and
     total ligand concentration
     [ipycalc entry point]
 
@@ -94,7 +94,7 @@ def binding(Kd, Mt, Lt):
     b = 1 + r + x
     a = 1
     c = x
-    bound = (b - np.sqrt(b ** 2 - 4 * c)) / 2
+    bound = (b - np.sqrt(b**2 - 4 * c)) / 2
 
     return Mt * bound
 
@@ -122,7 +122,7 @@ def titrate(Kd, Mt, L0, Lf):
     ligand : np.ndarray
         array of ligand cocentrations
     titration : np.ndarray
-        array of fraction bound at each ligand 
+        array of fraction bound at each ligand
         concentration
     """
 
@@ -130,3 +130,139 @@ def titrate(Kd, Mt, L0, Lf):
     titration = [binding(Kd, Mt, L) / Mt for L in ligand]
 
     return ligand, np.array(titration)
+
+
+def s2cone(s):
+    """
+    Convert order-parameter to a cone angle
+    [ipycalc entry point]
+
+    Parameters
+    ----------
+    s : float
+        order parameter (not squared)
+
+    Returns
+    -------
+    angle: float
+        cone angle for the Lipari-Sabo diffusion
+        in a cone model
+
+    """
+    a0, a1, a2 = -2 * s, 1, 1
+    root = np.roots([a2, a1, a0])
+    root = [r for r in root if r > 0][0]
+    angle = 180 / np.pi * np.arccos(root)
+
+    return angle
+
+
+def cone2s(angle):
+    """
+    Convert cone angle to order parameter
+    [ipycalc entry point]
+
+    Parameters
+    ----------
+    angle : float
+        cone angle in degrees
+
+    Returns
+    -------
+    s : float
+        order parameter (not squared)
+
+    """
+    angle = np.pi / 180 * angle
+    x = np.cos(angle)
+    s = 0.5 * x * (1 + x)
+
+    return s
+
+
+
+def mw2radius(mw, temperature=25, hydration=2.5, density=1.37):
+    """
+    [ipycalc entry point]
+
+    Parameters
+    ----------
+    mw : _type_
+        _description_
+    temperature : int, optional
+        _description_, by default 25
+    hydration : float, optional
+        _description_, by default 2.5
+    density : float, optional
+        _description_, by default 1.37
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+
+    term = 3 * mw * 1e3 / (4 * np.pi * density * 0.6023) 
+    radius = term ** (1/3)
+
+    return radius
+
+
+def radius2tc(r, temperature=25, viscosity=None):
+    """
+    [ipycalc entry point]
+
+    Parameters
+    ----------
+    r : _type_
+        _description_
+    temperature : int, optional
+        _description_, by default 25
+    viscosity : _type_, optional
+        _description_, by default None
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+
+    temperature += 273.15
+
+    if viscosity is None:
+        A, B, C = 2.414e-5, 247.8, 140
+        viscosity = A * 10 ** (B / (temperature - C))
+
+
+    kb = 1.380649
+    tc = 1e2 * 4 * np.pi * viscosity * r ** 3 / (3 * kb * temperature) 
+
+    return tc
+
+
+def mw2tc(mw,  temperature=25, viscosity=None, hydration=2.5, density=1.37):
+    """
+    [ipycalc entry point]
+
+    Parameters
+    ----------
+    mw : _type_
+        _description_
+    temperature : int, optional
+        _description_, by default 25
+    viscosity : _type_, optional
+        _description_, by default None
+    hydration : float, optional
+        _description_, by default 2.5
+    density : float, optional
+        _description_, by default 1.37
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+
+    r = mw2radius(mw=mw, temperature=temperature, hydration=hydration, density=density)
+    
+    return radius2tc(r=r, temperature=temperature, viscosity=viscosity)
