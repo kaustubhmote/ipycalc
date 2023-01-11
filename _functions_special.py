@@ -181,58 +181,55 @@ def cone2s(angle):
 
 
 
-def mw2radius(mw, temperature=25, hydration=2.5, density=1.37):
+def mw2radius(mw, hydration=2.5, density=1.37):
     """
-    [ipycalc entry point]
-
     Parameters
     ----------
-    mw : _type_
-        _description_
-    temperature : int, optional
-        _description_, by default 25
+    mw : float
+        molecular weight in kDa
     hydration : float, optional
-        _description_, by default 2.5
+        lenghth of hydration sphere in Å, default = 2.5 Å
     density : float, optional
-        _description_, by default 1.37
+        density (gm/mL), default = 1.37 gm/mL 
 
     Returns
     -------
-    _type_
-        _description_
-    """
+    radius : float
+        radius of the object in Å
 
+    [ipycalc entry point]
+
+    """
     term = 3 * mw * 1e3 / (4 * np.pi * density * 0.6023) 
-    radius = term ** (1/3)
+    radius = term ** (1/3) + hydration
 
     return radius
 
 
 def radius2tc(r, temperature=25, viscosity=None):
     """
-    [ipycalc entry point]
-
     Parameters
     ----------
-    r : _type_
-        _description_
+    r : float
+        radius of protein in Å
     temperature : int, optional
-        _description_, by default 25
+        temperature in °C, by default 25
     viscosity : _type_, optional
         _description_, by default None
 
     Returns
     -------
-    _type_
-        _description_
-    """
+    tc: float
+        rotational correlation time in nanoseconds
 
+    [ipycalc entry point]
+
+    """
     temperature += 273.15
 
     if viscosity is None:
         A, B, C = 2.414e-5, 247.8, 140
         viscosity = A * 10 ** (B / (temperature - C))
-
 
     kb = 1.380649
     tc = 1e2 * 4 * np.pi * viscosity * r ** 3 / (3 * kb * temperature) 
@@ -242,8 +239,6 @@ def radius2tc(r, temperature=25, viscosity=None):
 
 def mw2tc(mw,  temperature=25, viscosity=None, hydration=2.5, density=1.37):
     """
-    [ipycalc entry point]
-
     Parameters
     ----------
     mw : _type_
@@ -261,8 +256,10 @@ def mw2tc(mw,  temperature=25, viscosity=None, hydration=2.5, density=1.37):
     -------
     _type_
         _description_
-    """
 
-    r = mw2radius(mw=mw, temperature=temperature, hydration=hydration, density=density)
+    [ipycalc entry point]
+
+    """
+    r = mw2radius(mw=mw, hydration=hydration, density=density)
     
     return radius2tc(r=r, temperature=temperature, viscosity=viscosity)
