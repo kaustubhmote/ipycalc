@@ -7,6 +7,8 @@ qutip = 'qutip'
 sym = 'sympy'
 fft = 'numpy.fft'
 random = 'numpy.random'
+umath = 'uncertainties.umath'
+pint = 'pint'
 
 [functions]
 print = 'rich'
@@ -28,3 +30,4 @@ hist = 'matplotlib.pyplot'
 scatter = 'matplotlib.pyplot'
 imshow = 'matplotlib.pyplot'
 symbols = 'sympy'
+ufloat = 'uncertainties'

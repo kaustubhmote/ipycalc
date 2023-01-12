@@ -15,6 +15,7 @@ def main():
     from rich import traceback
     from ipython_prompt import set_prompt
 
+    # special case: rich tracebacks
     traceback.install()
     set_prompt("before")
 
@@ -34,6 +35,7 @@ def do_import():
 
     this = sys.modules[__name__]
 
+    # special case: set matplotlib backend
     use("module://matplotlib-backend-kitty")
     style.use("dark_background")
 
@@ -43,6 +45,12 @@ def do_import():
     import_functions(cfg["functions"], this)
     import_constants(this)
     import_custom_functions(this)
+
+    # special case: pint unit registration
+    from pint import UnitRegistry
+    ureg = UnitRegistry()
+    setattr(this, 'ureg', ureg)
+    
 
     set_prompt("after")
 
