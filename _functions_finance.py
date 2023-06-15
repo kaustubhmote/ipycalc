@@ -38,7 +38,7 @@ def compound_interest_years(starting_amount, years, annual_interest_percent_rate
     """
 
     time_blocks = years * 12
-    interest = 1 + annual_interest_rate / 1200
+    interest_per_block = annual_interest_percent_rate / 1200
 
     return compound_interest(starting_amount, time_blocks, interest_per_block)
 
