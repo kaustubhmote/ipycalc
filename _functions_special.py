@@ -5,7 +5,7 @@ import numpy as np
 from scipy.special import jv
 
 
-def redor(dc):
+def redor(dc, time=None):
     """
     Calculates the REDOR dephasing profile for
     a given dipole-dople coupling
@@ -33,7 +33,11 @@ def redor(dc):
 
     """
 
-    time = np.linspace(1e-10, 10 / dc, 1000)
+    if time is None:
+        time = np.linspace(1e-10, 10 / dc, 1000)
+    else:
+        time = np.linspace(1e-10, time, 1000)
+        
     J1 = jv(0.25, np.sqrt(2) * dc * time)
     J2 = jv(-0.25, np.sqrt(2) * dc * time)
     ds_s0 = 1 - np.sqrt(2) * np.pi / 4 * J1 * J2
