@@ -1,0 +1,12 @@
+#!/bin/bash
+
+IPYCALC=$HOME/data/repositories/ipycalc
+IPY=$HOME/miniconda/envs/ipycalc/bin/ipython
+KITTY=kitty
+
+
+$KITTY --single-instance \
+      --config $IPYCALC/src/defaults/ipycalc_kitty.conf \
+      -d $IPYCALC/src \
+      $IPY -i --no-confirm-exit --no-banner -c  \
+      "exec(open(\"python_thread_import.py\").read(), globals())"

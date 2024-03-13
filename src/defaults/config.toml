@@ -1,12 +1,6 @@
 [modules]
-ng = 'nmrglue'
 np = 'numpy'
 plt = 'matplotlib.pyplot'
-tins = 'tins'
-qutip = 'qutip'
-sym = 'sympy'
-fft = 'numpy.fft'
-random = 'numpy.random'
 umath = 'uncertainties.umath'
 pint = 'pint'
 
@@ -29,5 +23,4 @@ show = 'matplotlib.pyplot'
 hist = 'matplotlib.pyplot'
 scatter = 'matplotlib.pyplot'
 imshow = 'matplotlib.pyplot'
-symbols = 'sympy'
 ufloat = 'uncertainties'

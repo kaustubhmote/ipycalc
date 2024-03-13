@@ -29,7 +29,7 @@ def do_import():
     separated nonblocking thread.
 
     """
-    import sys, toml
+    import sys, toml, os
     from matplotlib import use, style
     from ipython_prompt import set_prompt
 
@@ -39,20 +39,32 @@ def do_import():
     use("module://matplotlib-backend-kitty")
     style.use("dark_background")
 
-    cfg = toml.load("config.toml")
+    import_config("defaults/config.toml", this)
+    for f in os.listdir("custom"):
+        if f.startswith("config_"):
+            import_config(f, this)
 
-    import_modules(cfg["modules"], this)
-    import_functions(cfg["functions"], this)
+
     import_constants(this)
     import_custom_functions(this)
 
+
     # special case: pint unit registration
     from pint import UnitRegistry
-    ureg = UnitRegistry()
-    setattr(this, 'ureg', ureg)
-    
+    unit = UnitRegistry()
+    setattr(this, 'unit', unit)
 
     set_prompt("after")
+
+
+def import_config(config, global_scope):
+
+    import toml
+    cfg = toml.load(config)
+
+    import_modules(cfg["modules"], global_scope)
+    import_functions(cfg["functions"], global_scope)
+
 
 
 def import_custom_functions(global_scope):
@@ -71,17 +83,20 @@ def import_custom_functions(global_scope):
     """
     import os
 
-    for f in os.listdir():
-        if f.startswith("_functions"):
+    for dirc in ("defaults", "custom"):
+        os.chdir(dirc)
+        for f in os.listdir("."):
+            if f.startswith("_functions"):
 
-            functions = __import__(f.removesuffix(".py"))
-            for function in dir(functions):
-                try:
-                    f = getattr(functions, function)
-                    if "[ipycalc entry point]" in f.__doc__:
-                        setattr(global_scope, f.__name__, f)
-                except (AttributeError, TypeError):
-                    pass
+                functions = __import__(f.removesuffix(".py"))
+                for function in dir(functions):
+                    try:
+                        f = getattr(functions, function)
+                        if "[ipycalc entry point]" in f.__doc__:
+                            setattr(global_scope, f.__name__, f)
+                    except (AttributeError, TypeError):
+                        pass
+        os.chdir("..")
 
 
 def import_modules(module_dict, global_scope):
@@ -148,13 +163,26 @@ def import_constants(global_scope):
         be imported
 
     """
+    import os
 
+    os.chdir("defaults")
     constants = __import__("_funcs_default") 
 
     for c in dir(constants):
         if not c.startswith("_"):
             setattr(global_scope, c, getattr(constants, c))
 
+    os.chdir("..")
+
+    os.chdir("custom")
+    for f in os.listdir("."):
+        if f.startswith("constants"):
+            constants = __import__("custom/_constants") 
+
+            for c in dir(constants):
+                if not c.startswith("_"):
+                    setattr(global_scope, c, getattr(constants, c))
+    os.chdir("..")
 
 if __name__ == "__main__":
     main()
