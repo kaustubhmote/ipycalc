@@ -1,3 +1,5 @@
 IPython
 matplotlib
 numpy
+pint
+uncertainties
