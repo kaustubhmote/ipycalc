@@ -42,7 +42,7 @@ def do_import():
     import_config("defaults/config.toml", this)
     for f in os.listdir("custom"):
         if f.startswith("config_"):
-            import_config(f, this)
+            import_config(f"custom/{f}", this)
 
 
     import_constants(this)
