@@ -1,8 +1,9 @@
 #!/bin/bash
 
-IPYCALC=$HOME/data/repositories/ipycalc
+IPYCALC_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+IPYCALC=$IPYCALC/ipycalc
 IPY=$HOME/miniconda/envs/ipycalc/bin/ipython
-KITTY=kitty
+KITTY=$IPYCALC_DIR/kitty.app/bin/kitty
 
 
 $KITTY --single-instance \
