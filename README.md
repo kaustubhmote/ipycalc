@@ -2,7 +2,7 @@
 
 `ipycalc` (IPython Calculator) is a quick way to start an [IPython](https://ipython.org/) console in a [kitty terminal](https://github.com/kovidgoyal/kitty) window. Its main feature is that it loads specified modules (that you regularly use) in the background in a separate non-blocking thread, allowing you to start typing without waiting for all modules to load. Here's how it looks when set up:
 
-![Demo](ipycalc.mp4)
+![Demo](ipycalc.gif)
 
 ## Features
 
