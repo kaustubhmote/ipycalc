@@ -1,0 +1,13 @@
+name: ipycalc_conda_env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy
+  - matplotlib<3.7
+  - ipython
+  - uncertainties
+  - pint
+  - pendulum
+  - rich

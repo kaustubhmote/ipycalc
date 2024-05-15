@@ -29,7 +29,8 @@ def do_import():
     separated nonblocking thread.
 
     """
-    import sys, toml, os
+    import sys
+    import os
     from matplotlib import use, style
     from ipython_prompt import set_prompt
 
@@ -59,8 +60,9 @@ def do_import():
 
 def import_config(config, global_scope):
 
-    import toml
-    cfg = toml.load(config)
+    import tomllib
+    with open(config, "rb") as f:
+        cfg = tomllib.load(f)
 
     import_modules(cfg["modules"], global_scope)
     import_functions(cfg["functions"], global_scope)

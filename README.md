@@ -15,3 +15,7 @@ It also does the following things:
 - Some basic financial functions (compound interest, sip, etc)
 - Gives a convenient way to incorporate your own functions that are also preloaded.
 
+
+## Installation
+
+ipycalc requires the kitty terminal and a conda environment with which you can
