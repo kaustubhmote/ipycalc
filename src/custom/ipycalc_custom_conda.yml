@@ -11,3 +11,5 @@ dependencies:
   - pint
   - pendulum
   - rich
+  - scipy
+  - sympy
