@@ -1,6 +1,0 @@
-IPython
-matplotlib
-numpy
-pint
-uncertainties
-rich

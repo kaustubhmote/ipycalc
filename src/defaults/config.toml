@@ -3,6 +3,7 @@ np = 'numpy'
 plt = 'matplotlib.pyplot'
 umath = 'uncertainties.umath'
 pint = 'pint'
+pendulum = 'pendulum'
 
 [functions]
 print = 'rich'
