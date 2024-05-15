@@ -1,7 +1,6 @@
 [modules]
-sym = 'sympy'
 fft = 'numpy.fft'
 random = 'numpy.random'
 
 [functions]
-symbols = 'sympy'
+expm = 'scipy.linalg'
