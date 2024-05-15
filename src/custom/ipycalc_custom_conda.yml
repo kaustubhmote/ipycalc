@@ -5,11 +5,11 @@ channels:
 dependencies:
   - python
   - numpy
+  - scipy
   - matplotlib
   - ipython
   - uncertainties
   - pint
   - pendulum
   - rich
-  - scipy
   - sympy
