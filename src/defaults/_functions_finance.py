@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-def compound_interest(starting_amount, time_blocks, interest_per_block):
+def compound_interest_base(starting_amount, time_blocks, interest_per_block):
     """
     Coumpound interest calculator
     [ipycalc entry point]
@@ -19,10 +19,10 @@ def compound_interest(starting_amount, time_blocks, interest_per_block):
 
     interest = 1 + interest_per_block
 
-    return starting_amount * (interest ** time_blocks)
+    return starting_amount * (interest**time_blocks)
 
 
-def compound_interest_years(starting_amount, years, annual_interest_percent_rate):
+def compound_interest(starting_amount, years, annual_interest_percent_rate):
     """
     Coumpound interest calculator
     [ipycalc entry point]
@@ -34,16 +34,16 @@ def compound_interest_years(starting_amount, years, annual_interest_percent_rate
     years : int
         number of years
     annual_interest_percent_rate : float
-        percentage interest 
+        percentage interest
     """
 
     time_blocks = years * 12
     interest_per_block = annual_interest_percent_rate / 1200
 
-    return compound_interest(starting_amount, time_blocks, interest_per_block)
+    return compound_interest_base(starting_amount, time_blocks, interest_per_block)
 
 
-def sip(seed=0, investment_per_time=0, time_blocks=0, interest_per_block=0):
+def sip_base(seed=0, investment_per_time=0, time_blocks=0, interest_per_block=0):
     """
     _summary_
 
@@ -77,3 +77,36 @@ def sip(seed=0, investment_per_time=0, time_blocks=0, interest_per_block=0):
         total = total_over_time[-1]
 
     return total_over_time[-1]
+
+
+def sip(seed=0, monthly_investment=0, years=0, annual_interest_percent=0):
+    """
+    sip with
+
+    Parameters
+    ----------
+    seed : float, optional
+        seed investment, by default 0
+    monthly_investment : float, optional
+        monthly investment, by default 0
+    years : int, optional
+        number of years of investment, by default 0
+    annual_interest_percent : float, optional
+        annual rate of interest, by default 0
+
+    Returns
+    -------
+    float
+        net amount
+
+    [ipycalc entry point]
+    """
+    time_blocks = 12 * years
+    interest_per_block = annual_interest_percent / 1200
+
+    return sip_base(
+        seed=seed,
+        investment_per_time=monthly_investment,
+        time_blocks=time_blocks,
+        interest_per_block=interest_per_block,
+    )
