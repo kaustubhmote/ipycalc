@@ -13,3 +13,8 @@ dependencies:
   - pendulum
   - rich
   - sympy
+  - pip
+  - pip:
+    - -e /home/kaustubh/data/repositories/nmrglue 
+    - -e /home/kaustubh/data/repositories/pulseplot
+    - -e /home/kaustubh/data/repositories/tins
