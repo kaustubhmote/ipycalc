@@ -1,12 +1,12 @@
 #!/bin/bash
 
-SRC=/opt/ipycalc/src
+SRC=/opt/labware/ipycalc/src
 IPYCALC=$SRC/ipycalc
 IPY=$SRC/ipycalc_conda_env/bin/ipython
 KITTY=$SRC/kitty.app/bin/kitty
 
 $KITTY --single-instance \
        --config $SRC/defaults/ipycalc_kitty.conf \
-       -d /opt/ipycalc/src \
+       -d /opt/labware/ipycalc/src \
        $IPY -i --no-confirm-exit --no-banner -c  \
        "exec(open(\"python_thread_import.py\").read(), globals())"
