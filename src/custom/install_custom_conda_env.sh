@@ -4,6 +4,7 @@ IPYCALC_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 SRC=$IPYCALC_DIR/..
 CONDA_ENV_MODE="update"
 CONDA_PRUNE="--prune"
+CONDA_ENV=1
 
 if [ -d $SRC/ipycalc_conda_env ]; then
     read -r -p "conda env already exists. Do you want to update the env? [y/n] " response
