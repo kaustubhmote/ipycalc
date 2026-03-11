@@ -1,12 +1,18 @@
 #!/bin/bash
 
 SRC=/opt/labware/ipycalc/src
-IPYCALC=$SRC/ipycalc
 IPY=$SRC/ipycalc_conda_env/bin/ipython
 KITTY=$SRC/kitty.app/bin/kitty
+SOCKET="/tmp/ipycalc_$USER.sock"
 
-$KITTY --single-instance \
-       --config $SRC/defaults/ipycalc_kitty.conf \
-       -d /opt/labware/ipycalc/src \
-       $IPY -i --no-confirm-exit --no-banner -c  \
-       "exec(open(\"python_thread_import.py\").read(), globals())"
+# Try to focus the existing window
+$KITTY @ --to unix:$SOCKET focus-window --match all 2>/dev/null
+
+# If the command failed (exit code non-zero), start the instance
+if [ $? -ne 0 ]; then
+    $KITTY --listen-on unix:$SOCKET \
+           --config $SRC/defaults/ipycalc_kitty.conf \
+           -d /opt/labware/ipycalc/src \
+           $IPY -i --no-confirm-exit --no-banner -c \
+           "exec(open(\"python_thread_import.py\").read(), globals())" &
+fi
