@@ -1,87 +1,142 @@
-# ipycalc
+# IPyCalc
 
-`ipycalc` (IPython Calculator) is a quick way to start an [IPython](https://ipython.org/) console in a [kitty terminal](https://github.com/kovidgoyal/kitty) window. Its main feature is that it loads specified modules (that you regularly use) in the background in a separate non-blocking thread, allowing you to start typing without waiting for all modules to load. Here's how it looks when set up:
+IPyCalc opens a focused IPython shell in a Kitty terminal. It loads common scientific names in the background and renders Matplotlib figures inside the terminal.
 
-![Demo](ipycalc.gif)
+![IPyCalc demonstration](ipycalc.gif)
 
-## Features
+## What the AppImage contains
 
-- **Quick plotting** in the terminal using `matplotlib` and `matplotlib-kitty-backend`.
-- **Unit conversion** with the `pint` library.
-- **Uncertainty calculations** using the `uncertainties` library.
-- **Datetime functionality** with the `pendulum` library.
-- **Basic financial functions** (e.g., compound interest, SIP).
-- **Custom function integration**, allowing you to preload your own functions.
+The AppImage contains Kitty and the pure-Python IPyCalc package. It does not contain a general-purpose Python environment or scientific Python packages. Select an existing Python environment before the first launch.
 
-## Installation
+IPyCalc requires Python 3.11 or newer and these imports:
 
-`ipycalc` has been tested on Linux and should work on macOS. It won't work on Windows as `kitty` is not yet compatible with WSL.
+```text
+IPython
+matplotlib
+numpy
+scipy
+uncertainties
+pint
+pendulum
+rich
+```
 
-### Prerequisites
+The selected environment can be a Conda environment, a uv environment, a virtual environment, or a system Python installation.
 
-Ensure you have [`conda`](https://docs.conda.io/en/latest/) installed and available in your terminal.
+## Configure an AppImage
 
-### Steps
+Save the Python interpreter that IPyCalc should use:
 
-1. Clone the `ipycalc` repository and navigate to the directory:
-    ```bash
-    git clone https://github.com/kaustubhmote/ipycalc
-    cd ipycalc
-    ```
+```bash
+./IPyCalc-1.0.0-x86_64.AppImage \
+    --configure-python /absolute/path/to/environment/bin/python
+```
 
-2. Run the installation script:
-    ```bash
-    ./install.sh
-    ```
+Check the environment without opening Kitty:
 
-The install script will:
-- Download [Kitty](https://sw.kovidgoyal.net/kitty/) and place it in the correct location.
-- Set up a Python (Conda) environment at `ipycalc/src/ipycalc_conda_env`
-- Generate an executable called `ipycalc` in the `src` folder.
+```bash
+./IPyCalc-1.0.0-x86_64.AppImage --check
+```
 
-### Final Setup
+Start IPyCalc:
 
-You will need to manually add a keyboard shortcut to run the `ipycalc` script. This will depend on your desktop environment. For GNOME, see [this link](https://help.gnome.org/users/gnome-help/stable/keyboard-shortcuts-set.html.en). I recommend `Ctrl Alt =` as the shortcut.
+```bash
+./IPyCalc-1.0.0-x86_64.AppImage
+```
 
+The AppImage stores the interpreter path in `~/.config/ipycalc/python-path`. If `XDG_CONFIG_HOME` is set, IPyCalc uses `$XDG_CONFIG_HOME/ipycalc/python-path` instead.
 
-### Default Functionality
+Use another interpreter for one launch:
 
-ipycalc runs the equivalent of following import and assignment commands in the background as soon as it starts.
+```bash
+./IPyCalc-1.0.0-x86_64.AppImage --python /another/environment/bin/python
+```
+
+`IPYCALC_PYTHON` provides the same one-launch override.
+
+## Create user configuration
+
+Create the example configuration and function file:
+
+```bash
+./IPyCalc-1.0.0-x86_64.AppImage --init-config
+```
+
+IPyCalc creates this layout without overwriting existing files:
+
+```text
+~/.config/ipycalc/
+├── python-path
+├── config.toml
+└── functions/
+    └── _functions_example.py
+```
+
+Add module aliases and functions to `config.toml`:
+
+```toml
+[modules]
+fft = "numpy.fft"
+
+[functions]
+gamma = "scipy.special"
+```
+
+A function in `_functions*.py` enters the namespace when its docstring contains `[ipycalc entry point]`:
 
 ```python
-import numpy as np
-from numpy import sqrt, pi, sin, cos, tan, log, log10, linspace, arange, random
+def double(value):
+    """Return twice the supplied value.
 
-import matplotlib.pyplot as plt
-from matplotlib.pyplot import plot, show, hist, scatter, imshow
+    [ipycalc entry point]
+    """
 
-import uncertainities.umath as umath
-from uncertainities import ufloat
-
-import pint
-import pendulum
-
-x = linspace(-10, 10, 100)
-ln = np.log
-kb =  1.38064852e-23
-R = 8.314
-h = 6.62607015e-34
-hbar = 1.054571817e-34
-π = np.pi
-
+    return 2 * value
 ```
-The loading of functions happens in the background, allowing you to start typing before all functions are fully loaded. The prompt will be colored red if all imports have not been completed and will turn green once they are done. You don't need to wait for the prompt to turn green; you can start typing as soon as the Python console opens.
 
+Run `ipycalc_reload()` inside IPython after changing a custom function. Inspect `ipycalc_errors` when a custom import fails. `ipycalc_ready` becomes `True` when background loading finishes.
 
-### Custom Functionality
+## Default namespace
 
-Inside the `src` folder, there is a folder called `custom`. You can add any number of Python scripts starting with the name `_functions` (e.g., `_functions_pandas.py`). Any function declared in these scripts that has a line declaring `"[ipycalc entry point]"` in its docstring will be automatically imported when you run `ipycalc`. An example script is provided in the folder.
+The default configuration loads NumPy as `np`, Matplotlib as `plt`, Pint, Pendulum, uncertainties, common NumPy and Matplotlib functions, physical constants, finance helpers, and the scientific helpers carried by the original IPyCalc implementation.
 
-To install any additional packages required by your custom scripts, you can either:
+The input prompt uses the loading color until the namespace is ready. You can type during loading, but a name is unavailable until the ready prompt appears.
 
-1. Install them directly in the Conda environment that was created.
-2. Modify the `.yml` file in the `custom` folder to include the additional libraries. After editing this file, run the `install_custom_conda_env.sh` script to update the Conda environment.
+## Develop from source
 
+Install uv, then create the locked development environment:
 
+```bash
+uv sync --group dev
+```
 
----
+Run the checks:
+
+```bash
+uv run ipycalc --check
+uv run pytest
+```
+
+Run the source version with a system Kitty installation:
+
+```bash
+uv run ipycalc
+```
+
+The repository also includes `ipycalc_conda.yml` as an example Conda environment.
+
+## Build the AppImage
+
+Build from the repository root:
+
+```bash
+packaging/appimage/build.sh
+```
+
+The build script verifies pinned checksums for Kitty, appimagetool, and the AppImage runtime. It writes the AppDir under `build/` and the AppImage under `dist/`.
+
+See [the AppImage build guide](packaging/appimage/README.md) for an AppDir-only build and local archive overrides. Follow [the complete build and test guide](docs/build-and-test-appimage.md) to configure environments and test every user-visible feature.
+
+## Platform support
+
+The AppImage targets Linux. The first published build targets x86-64. The build script also contains pinned AArch64 inputs, but AArch64 requires its own build and test job.

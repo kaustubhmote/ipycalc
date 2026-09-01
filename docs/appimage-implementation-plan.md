@@ -377,7 +377,7 @@ For each environment:
 Acceptance criteria:
 
 - Both environments pass the same behavior checks.
-- The AppImage contains no Python interpreter or scientific Python packages.
+- The AppImage contains no user-facing Python interpreter or scientific Python packages. Kitty may contain its private runtime libraries.
 - The AppImage works after it moves to a different directory.
 - The selected environment receives no new or modified files.
 
@@ -470,6 +470,6 @@ The AppImage work is complete when all these statements are true:
 - Custom functions load from the user's XDG configuration directory.
 - Matplotlib figures render inside the bundled Kitty terminal.
 - A second launch focuses the existing window.
-- The AppImage contains Kitty and IPyCalc code but no Python interpreter.
+- The AppImage contains Kitty and IPyCalc code but no user-facing Python interpreter. Kitty may contain its private runtime libraries.
 - The build uses pinned, checksum-verified inputs.
 - CI reproduces and tests the AppImage from an empty checkout.
