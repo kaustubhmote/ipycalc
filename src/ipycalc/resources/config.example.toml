@@ -1,0 +1,8 @@
+# Values in this file replace values from IPyCalc's default configuration.
+
+[modules]
+# fft = "numpy.fft"
+
+[functions]
+# gamma = "scipy.special"
+

@@ -1,0 +1,28 @@
+[modules]
+np = "numpy"
+plt = "matplotlib.pyplot"
+umath = "uncertainties.umath"
+pint = "pint"
+pendulum = "pendulum"
+
+[functions]
+print = "rich"
+sqrt = "numpy"
+pi = "numpy"
+sin = "numpy"
+cos = "numpy"
+tan = "numpy"
+log = "numpy"
+log10 = "numpy"
+linspace = "numpy"
+arange = "numpy"
+random = "numpy"
+expm = "scipy.linalg"
+curve_fit = "scipy.optimize"
+plot = "matplotlib.pyplot"
+show = "matplotlib.pyplot"
+hist = "matplotlib.pyplot"
+scatter = "matplotlib.pyplot"
+imshow = "matplotlib.pyplot"
+ufloat = "uncertainties"
+
