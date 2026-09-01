@@ -1,6 +1,6 @@
 # Build, use, and test the IPyCalc AppImage
 
-This guide builds the AppImage, connects it to an external Python environment, and tests each user-visible feature.
+This guide builds the AppImage, creates its managed uv environment, and tests each user-visible feature.
 
 ## Check the host
 
@@ -51,7 +51,7 @@ uv run ruff check src/ipycalc tests
 MPLCONFIGDIR=/tmp/ipycalc-matplotlib uv run pytest
 ```
 
-The test run should report 20 passing tests.
+The test run should report 27 passing tests.
 
 Build the wheel and source archive:
 
@@ -116,64 +116,7 @@ find build/IPyCalc.AppDir -type f \
 
 No path should print. Kitty includes private runtime libraries, but IPyCalc cannot use them as the user's scientific environment.
 
-## Create an external Python environment with uv
-
-Create a small uv project outside the repository:
-
-```bash
-mkdir -p "$HOME/.local/share/ipycalc-env"
-cd "$HOME/.local/share/ipycalc-env"
-uv init --bare
-uv add \
-    ipython \
-    matplotlib \
-    numpy \
-    scipy \
-    uncertainties \
-    pint \
-    pendulum \
-    rich
-```
-
-The interpreter is:
-
-```text
-$HOME/.local/share/ipycalc-env/.venv/bin/python
-```
-
-Confirm the imports:
-
-```bash
-uv run python -c \
-    'import IPython, matplotlib, numpy, scipy, uncertainties, pint, pendulum, rich; print("ready")'
-```
-
-The command should print `ready`.
-
-## Create an external Python environment with Conda
-
-From the repository, create the supplied environment:
-
-```bash
-conda env create \
-    --prefix "$HOME/.local/share/ipycalc-conda" \
-    --file ipycalc_conda.yml
-```
-
-The interpreter is:
-
-```text
-$HOME/.local/share/ipycalc-conda/bin/python
-```
-
-Confirm the imports:
-
-```bash
-"$HOME/.local/share/ipycalc-conda/bin/python" -c \
-    'import IPython, matplotlib, numpy, scipy, uncertainties, pint, pendulum, rich; print("ready")'
-```
-
-## Configure the AppImage
+## Create the managed uv environment
 
 Return to the repository and set a shell variable:
 
@@ -183,21 +126,65 @@ APPIMAGE="$PWD/dist/IPyCalc-1.0.0-x86_64.AppImage"
 chmod u+x "$APPIMAGE"
 ```
 
-Configure the uv interpreter:
+Create, sync, and select the managed environment:
 
 ```bash
-"$APPIMAGE" --configure-python \
-    "$HOME/.local/share/ipycalc-env/.venv/bin/python"
+"$APPIMAGE" --init-environment
 ```
 
-Or configure the Conda interpreter:
+The command creates this project:
+
+```text
+~/.config/ipycalc/environment/
+├── pyproject.toml
+├── uv.lock
+└── .venv/
+```
+
+If `XDG_CONFIG_HOME` is set, IPyCalc creates the project under `$XDG_CONFIG_HOME/ipycalc/environment`. A fresh launch runs the same setup when no interpreter is configured.
+
+`--init-environment` never overwrites an existing `pyproject.toml`. It runs `uv sync` against the existing project, then saves the managed interpreter to `python-path`.
+
+Set a shell variable for the project:
 
 ```bash
-"$APPIMAGE" --configure-python \
-    "$HOME/.local/share/ipycalc-conda/bin/python"
+ENVIRONMENT_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/ipycalc/environment"
 ```
 
-IPyCalc writes the resolved path to `~/.config/ipycalc/python-path`. It uses `$XDG_CONFIG_HOME/ipycalc/python-path` when `XDG_CONFIG_HOME` is set.
+Confirm the imports:
+
+```bash
+uv run --project "$ENVIRONMENT_HOME" python -c \
+    'import IPython, matplotlib, numpy, scipy, uncertainties, pint, pendulum, rich; print("ready")'
+```
+
+The command should print `ready`.
+
+### Add custom requirements
+
+Add packages with `uv add`:
+
+```bash
+uv add --project "$ENVIRONMENT_HOME" sympy qutip
+```
+
+uv writes the requirements to `pyproject.toml`, updates `uv.lock`, and syncs `.venv`. The AppImage uses the updated environment on its next launch.
+
+To edit the dependency list by hand, change `$ENVIRONMENT_HOME/pyproject.toml`, then run:
+
+```bash
+uv sync --project "$ENVIRONMENT_HOME"
+```
+
+### Use another environment
+
+To use an existing environment instead, save its Python interpreter:
+
+```bash
+"$APPIMAGE" --configure-python /absolute/path/to/environment/bin/python
+```
+
+IPyCalc writes the resolved path to `~/.config/ipycalc/python-path`. Run `--init-environment` to select the managed uv environment again.
 
 Print the selected interpreter:
 
@@ -369,7 +356,9 @@ Interpreter selection uses this order:
 1. `--python PATH`
 2. `IPYCALC_PYTHON`
 3. The saved `python-path`
-4. `python3` from `PATH`
+4. The managed uv environment under the configuration directory
+
+When the last path does not exist, AppRun calls `uv sync` to create it. Explicit interpreter overrides never install packages.
 
 ## Test environment failures
 

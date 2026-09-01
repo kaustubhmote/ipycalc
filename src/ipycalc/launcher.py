@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -19,6 +20,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--show-python", action="store_true", help="print the selected interpreter")
     parser.add_argument("--check", action="store_true", help="check Python and Kitty without opening a window")
     parser.add_argument("--init-config", action="store_true", help="create example user configuration files")
+    parser.add_argument(
+        "--init-environment",
+        action="store_true",
+        help="create, sync, and select the AppImage uv environment",
+    )
     return parser
 
 
@@ -36,11 +42,12 @@ def _reexec_if_requested(arguments: argparse.Namespace, original: list[str]) -> 
     executable = Path(requested).expanduser()
     if not executable.is_file() or not os.access(executable, os.X_OK):
         raise SystemExit(f"IPyCalc: Python is not executable: {executable}")
+    absolute = Path(os.path.abspath(executable))
     environment = os.environ.copy()
     root = str(package_root())
     existing = environment.get("PYTHONPATH")
     environment["PYTHONPATH"] = f"{root}{os.pathsep}{existing}" if existing else root
-    os.execve(str(executable.resolve()), [str(executable.resolve()), "-m", "ipycalc.launcher", *original], environment)
+    os.execve(str(absolute), [str(absolute), "-m", "ipycalc.launcher", *original], environment)
 
 
 def _appdir() -> Path | None:
@@ -149,6 +156,18 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         destination = save_python_path(sys.executable)
         print(f"Saved Python interpreter to {destination}")
+    if arguments.init_environment:
+        managed = os.environ.get("IPYCALC_MANAGED_ENVIRONMENT")
+        if not managed:
+            print("IPyCalc: --init-environment must be run through the AppImage", file=sys.stderr)
+            return 1
+        if not report.valid:
+            print(format_report(report), file=sys.stderr)
+            return 1
+        destination = save_python_path(sys.executable)
+        print(f"Managed uv environment: {Path(managed).resolve()}")
+        print(f"Saved Python interpreter to {destination}")
+        print(f"Add packages with: uv add --project {shlex.quote(str(Path(managed).resolve()))} PACKAGE")
     if arguments.init_config:
         created, skipped = init_user_config()
         for path in created:
@@ -156,11 +175,11 @@ def main(argv: list[str] | None = None) -> int:
         for path in skipped:
             print(f"Skipped existing file {path}")
     if arguments.show_python:
-        print(str(Path(sys.executable).resolve()))
+        print(str(Path(os.path.abspath(sys.executable))))
     kitty = find_kitty()
     if arguments.check:
         return _check(kitty)
-    if arguments.configure_python or arguments.init_config or arguments.show_python:
+    if arguments.configure_python or arguments.init_config or arguments.init_environment or arguments.show_python:
         return 0
     if not report.valid:
         print(format_report(report), file=sys.stderr)

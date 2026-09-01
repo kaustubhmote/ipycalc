@@ -21,6 +21,6 @@ IPYCALC_KITTY_ARCHIVE=/path/to/kitty-0.48.1-x86_64.txz \
     packaging/appimage/build.sh --appdir-only
 ```
 
-The AppImage contains Kitty and the pure-Python IPyCalc package. It uses a Python environment configured by the user.
+The AppImage contains Kitty and the pure-Python IPyCalc package. On first launch, it uses the host's uv installation to create a Python environment under the IPyCalc configuration directory.
 
-Follow [the complete build and test guide](../../docs/build-and-test-appimage.md) to create an environment, configure the AppImage, test plotting and custom functions, and install a desktop launcher.
+Follow [the complete build and test guide](../../docs/build-and-test-appimage.md) to create the managed environment, add packages, test plotting and custom functions, and install a desktop launcher.

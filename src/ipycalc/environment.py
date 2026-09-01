@@ -38,7 +38,7 @@ def validate_current(imports: Iterable[str] = REQUIRED_IMPORTS) -> EnvironmentRe
     missing: list[str] = []
     if sys.version_info < (3, 11):
         errors.append(f"Python {sys.version.split()[0]} is too old; IPyCalc requires Python 3.11 or newer")
-    executable = Path(sys.executable)
+    executable = Path(os.path.abspath(sys.executable))
     if not executable.is_file() or not os.access(executable, os.X_OK):
         errors.append(f"Python executable is not an executable file: {executable}")
     for module_name in imports:
@@ -48,7 +48,7 @@ def validate_current(imports: Iterable[str] = REQUIRED_IMPORTS) -> EnvironmentRe
             missing.append(module_name)
             errors.append(f"cannot import {module_name}: {exc}")
     return EnvironmentReport(
-        executable=str(executable.resolve()),
+        executable=str(executable),
         version=sys.version.split()[0],
         minimum_version="3.11",
         missing=tuple(missing),

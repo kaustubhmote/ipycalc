@@ -6,7 +6,7 @@ IPyCalc opens a focused IPython shell in a Kitty terminal. It loads common scien
 
 ## What the AppImage contains
 
-The AppImage contains Kitty and the pure-Python IPyCalc package. It does not contain a general-purpose Python environment or scientific Python packages. Select an existing Python environment before the first launch.
+The AppImage contains Kitty and the pure-Python IPyCalc package. It uses uv to create a Python environment under the IPyCalc configuration directory. The AppImage does not bundle Python or scientific Python packages.
 
 IPyCalc requires Python 3.11 or newer and these imports:
 
@@ -21,16 +21,26 @@ pendulum
 rich
 ```
 
-The selected environment can be a Conda environment, a uv environment, a virtual environment, or a system Python installation.
+Install [uv](https://docs.astral.sh/uv/) on the host before the first launch. uv can download Python when the host does not have a compatible interpreter.
 
-## Configure an AppImage
+## Create the default environment
 
-Save the Python interpreter that IPyCalc should use:
+Create, sync, and select the default environment:
 
 ```bash
-./IPyCalc-1.0.0-x86_64.AppImage \
-    --configure-python /absolute/path/to/environment/bin/python
+./IPyCalc-1.0.0-x86_64.AppImage --init-environment
 ```
+
+IPyCalc creates the uv project at `~/.config/ipycalc/environment`. If `XDG_CONFIG_HOME` is set, it uses `$XDG_CONFIG_HOME/ipycalc/environment`. A fresh AppImage launch creates the same environment when no other interpreter is configured.
+
+Add custom packages to the environment with `uv add`:
+
+```bash
+uv add --project "${XDG_CONFIG_HOME:-$HOME/.config}/ipycalc/environment" \
+    sympy qutip
+```
+
+The command updates both `pyproject.toml` and `uv.lock`, then syncs `.venv`. You can edit the project file directly and run `uv sync --project PATH` instead.
 
 Check the environment without opening Kitty:
 
@@ -44,7 +54,14 @@ Start IPyCalc:
 ./IPyCalc-1.0.0-x86_64.AppImage
 ```
 
-The AppImage stores the interpreter path in `~/.config/ipycalc/python-path`. If `XDG_CONFIG_HOME` is set, IPyCalc uses `$XDG_CONFIG_HOME/ipycalc/python-path` instead.
+`--init-environment` stores the managed interpreter path in `~/.config/ipycalc/python-path`. If `XDG_CONFIG_HOME` is set, IPyCalc uses `$XDG_CONFIG_HOME/ipycalc/python-path` instead.
+
+To use an existing Python environment instead, save its interpreter:
+
+```bash
+./IPyCalc-1.0.0-x86_64.AppImage \
+    --configure-python /absolute/path/to/environment/bin/python
+```
 
 Use another interpreter for one launch:
 
@@ -68,6 +85,10 @@ IPyCalc creates this layout without overwriting existing files:
 ~/.config/ipycalc/
 ├── python-path
 ├── config.toml
+├── environment/
+│   ├── pyproject.toml
+│   ├── uv.lock
+│   └── .venv/
 └── functions/
     └── _functions_example.py
 ```
@@ -122,8 +143,6 @@ Run the source version with a system Kitty installation:
 ```bash
 uv run ipycalc
 ```
-
-The repository also includes `ipycalc_conda.yml` as an example Conda environment.
 
 ## Build the AppImage
 

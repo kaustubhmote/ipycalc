@@ -24,11 +24,14 @@ def read_python_path(env: Mapping[str, str] | None = None) -> Path | None:
 
 
 def save_python_path(executable: str | Path, env: Mapping[str, str] | None = None) -> Path:
-    resolved = Path(executable).expanduser().resolve(strict=True)
+    expanded = Path(executable).expanduser()
+    if not expanded.is_file():
+        raise FileNotFoundError(expanded)
+    absolute = Path(os.path.abspath(expanded))
     destination = python_path_file(env)
     destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     os.chmod(destination.parent, 0o700)
-    destination.write_text(f"{resolved}\n", encoding="utf-8")
+    destination.write_text(f"{absolute}\n", encoding="utf-8")
     os.chmod(destination, 0o600)
     return destination
 

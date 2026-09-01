@@ -46,7 +46,6 @@ include = [
     "/THIRD_PARTY_NOTICES.md",
     "/install.sh",
     "/ipycalc.gif",
-    "/ipycalc_conda.yml",
     "/pyproject.toml",
     "/uv.lock",
 ]

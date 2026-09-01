@@ -1,8 +1,8 @@
-# Build IPyCalc as a Kitty AppImage with an external Python environment
+# Build IPyCalc as a Kitty AppImage with a managed uv environment
 
 ## Goal
 
-Build a Linux AppImage that opens the existing IPyCalc experience in a bundled Kitty terminal. The AppImage must use a Python interpreter selected by the user. It must not bundle Python, IPython, NumPy, SciPy, Matplotlib, or the user's custom dependencies.
+Build a Linux AppImage that opens the existing IPyCalc experience in a bundled Kitty terminal. The AppImage uses the host's uv installation to create a default environment under the user's configuration directory. It must not bundle Python, IPython, NumPy, SciPy, Matplotlib, or the user's custom dependencies.
 
 The first release targets x86-64 Linux. The design must leave room for an AArch64 build without changing the runtime interface.
 
@@ -15,26 +15,26 @@ The AppImage owns these files and behaviors:
 - The IPyCalc bootstrap, prompt classes, namespace loader, and Matplotlib backend.
 - Default constants, default functions, and example configuration.
 - The desktop file and application icon.
-- Python environment discovery, validation, and error messages.
+- Managed uv environment creation, Python discovery, validation, and error messages.
 - Single-window startup and focus behavior.
 
 The user owns these files and behaviors:
 
-- A Python 3.11 or newer interpreter.
-- IPython and the scientific packages imported by the default configuration.
+- The host's uv installation.
+- The managed environment and its Python packages.
 - Packages imported by custom functions.
 - Persistent configuration under the XDG configuration directory.
 - Custom function files.
 
-The AppImage must never modify the selected Python environment. It may inspect the interpreter and import packages to validate the environment.
+The AppImage may create or sync only its managed uv environment. It must never modify an interpreter selected through `--python`, `IPYCALC_PYTHON`, or `--configure-python`.
 
 ## Non-goals
 
 The first release will not:
 
 - Bundle a Python runtime or a Conda environment.
-- Create, update, or delete a user environment.
-- Install missing Python packages.
+- Delete the managed uv environment.
+- Install missing packages into an explicitly selected environment.
 - Publish a Flatpak, Debian package, RPM package, or macOS application.
 - Add a graphical configuration window.
 - Add automatic AppImage updates.
@@ -50,7 +50,9 @@ Resolve the interpreter in this order:
 2. Use `IPYCALC_PYTHON` when the environment variable is set.
 3. Read the first line of `$XDG_CONFIG_HOME/ipycalc/python-path`.
 4. Use `$HOME/.config/ipycalc/python-path` when `XDG_CONFIG_HOME` is unset.
-5. Test `python3` from `PATH` as a final fallback.
+5. Use `.venv/bin/python` from the managed uv project under the configuration directory.
+
+If the managed interpreter does not exist, copy the bundled environment project and run `uv sync`. Add `--init-environment` to create or sync the project and select its interpreter. Never overwrite an existing environment `pyproject.toml`.
 
 Add `--configure-python PATH` to validate and save an interpreter. Create the configuration directory with mode `0700` and the `python-path` file with mode `0600`. Store one absolute path followed by a newline. Do not source the file as shell code.
 
@@ -159,6 +161,10 @@ Use this directory layout:
 $XDG_CONFIG_HOME/ipycalc/
 ├── python-path
 ├── config.toml
+├── environment/
+│   ├── pyproject.toml
+│   ├── uv.lock
+│   └── .venv/
 └── functions/
     └── _functions_example.py
 ```
@@ -224,7 +230,7 @@ Add a `pyproject.toml` with:
 - A test dependency group.
 - Package-data rules for the configuration and default function files.
 
-Use uv for the development environment and lock file. The AppImage runtime must not call uv.
+Use uv for both the development environment and the managed user environment. The AppImage runtime may call `uv sync` only for the managed project under the configuration directory.
 
 ### Create tracked AppImage sources
 
@@ -282,8 +288,8 @@ After the new launcher passes its integration tests:
 - Remove the interactive Conda installer from `install.sh`.
 - Remove hard-coded checkout paths from all launchers.
 - Remove `src/custom/install_custom_conda_env.sh` from the AppImage path.
-- Keep the Conda YAML file as an optional environment example.
-- Update the README so users know that the AppImage does not contain Python.
+- Replace the Conda YAML example with the managed uv project template.
+- Update the README so users know that the AppImage creates Python outside the AppImage.
 
 Do not remove the legacy source files until tests cover their behavior.
 
@@ -361,7 +367,7 @@ Acceptance criteria:
 
 ### Phase 7: run end-to-end tests
 
-Test the AppImage with a disposable uv environment and a disposable Conda environment. The environments must remain outside the AppImage.
+Test the AppImage with a disposable managed uv environment and a disposable external environment. Both environments must remain outside the AppImage.
 
 For each environment:
 
@@ -379,7 +385,8 @@ Acceptance criteria:
 - Both environments pass the same behavior checks.
 - The AppImage contains no user-facing Python interpreter or scientific Python packages. Kitty may contain its private runtime libraries.
 - The AppImage works after it moves to a different directory.
-- The selected environment receives no new or modified files.
+- Explicitly selected environments receive no new or modified files.
+- The managed environment records custom requirements in `pyproject.toml` and `uv.lock`.
 
 ### Phase 8: document and publish
 
@@ -456,7 +463,7 @@ Keep the work reviewable with this commit order:
 5. `Add the AppImage launcher and single-instance flow`
 6. `Add reproducible AppDir and AppImage builds`
 7. `Add AppImage integration tests`
-8. `Document external Python setup and releases`
+8. `Document managed uv setup and releases`
 
 Each commit must pass the tests introduced up to that point. Do not combine downloaded Kitty binaries or generated AppImages with source commits.
 
@@ -464,6 +471,8 @@ Each commit must pass the tests introduced up to that point. Do not combine down
 
 The AppImage work is complete when all these statements are true:
 
+- A user can run `IPyCalc.AppImage --init-environment` to create the default uv project under the configuration directory.
+- A user can add custom packages to that project with `uv add --project PATH PACKAGE`.
 - A user can run `IPyCalc.AppImage --configure-python /absolute/path/to/python`.
 - A later desktop launch opens a clean Kitty window and starts IPython from that interpreter.
 - The default namespace loads in the background and reports failures.
