@@ -1,0 +1,52 @@
+name: AppImage
+
+on:
+  push:
+    branches: [appimage, master]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-x86-64:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install desktop-file-validate
+        run: sudo apt-get update && sudo apt-get install --yes desktop-file-utils
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.0"
+
+      - name: Install the locked development environment
+        run: uv sync --locked --group dev
+
+      - name: Run tests
+        env:
+          MPLCONFIGDIR: /tmp/ipycalc-matplotlib
+        run: |
+          uv run ruff check src/ipycalc tests
+          uv run pytest
+
+      - name: Build the AppImage
+        run: packaging/appimage/build.sh
+
+      - name: Validate the AppDir with an external Python
+        env:
+          MPLCONFIGDIR: /tmp/ipycalc-matplotlib
+          XDG_CONFIG_HOME: /tmp/ipycalc-config
+          XDG_RUNTIME_DIR: /tmp/ipycalc-runtime
+        run: build/IPyCalc.AppDir/AppRun --python "$PWD/.venv/bin/python" --check
+
+      - name: Upload the AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: IPyCalc-x86_64
+          path: dist/IPyCalc-*-x86_64.AppImage
+          if-no-files-found: error

@@ -1,0 +1,81 @@
+#!/bin/sh
+set -eu
+
+SELF_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+APPDIR=${APPDIR:-$SELF_DIR}
+PACKAGE_ROOT=$APPDIR/opt/ipycalc
+
+if [ -n "${IPYCALC_CONFIG_HOME:-}" ]; then
+    CONFIG_HOME=$IPYCALC_CONFIG_HOME
+elif [ -n "${XDG_CONFIG_HOME:-}" ]; then
+    CONFIG_HOME=$XDG_CONFIG_HOME/ipycalc
+else
+    CONFIG_HOME=${HOME:?HOME is not set}/.config/ipycalc
+fi
+
+ONE_SHOT_PYTHON=""
+CONFIGURE_PYTHON=""
+EXPECT=""
+for ARG in "$@"; do
+    if [ "$EXPECT" = "python" ]; then
+        ONE_SHOT_PYTHON=$ARG
+        EXPECT=""
+        continue
+    fi
+    if [ "$EXPECT" = "configure" ]; then
+        CONFIGURE_PYTHON=$ARG
+        EXPECT=""
+        continue
+    fi
+    case "$ARG" in
+        --python)
+            EXPECT="python"
+            ;;
+        --python=*)
+            ONE_SHOT_PYTHON=${ARG#--python=}
+            ;;
+        --configure-python)
+            EXPECT="configure"
+            ;;
+        --configure-python=*)
+            CONFIGURE_PYTHON=${ARG#--configure-python=}
+            ;;
+    esac
+done
+
+if [ -n "$EXPECT" ]; then
+    echo "IPyCalc: $EXPECT requires a Python path" >&2
+    exit 2
+fi
+
+if [ -n "$CONFIGURE_PYTHON" ]; then
+    PYTHON=$CONFIGURE_PYTHON
+elif [ -n "$ONE_SHOT_PYTHON" ]; then
+    PYTHON=$ONE_SHOT_PYTHON
+elif [ -n "${IPYCALC_PYTHON:-}" ]; then
+    PYTHON=$IPYCALC_PYTHON
+elif [ -f "$CONFIG_HOME/python-path" ]; then
+    IFS= read -r PYTHON < "$CONFIG_HOME/python-path" || PYTHON=""
+else
+    PYTHON=$(command -v python3 || true)
+fi
+
+if [ -z "${PYTHON:-}" ] || [ ! -f "$PYTHON" ] || [ ! -x "$PYTHON" ]; then
+    echo "IPyCalc: no usable Python interpreter is configured." >&2
+    echo "Run: $0 --configure-python /absolute/path/to/python" >&2
+    exit 1
+fi
+
+export IPYCALC_APPDIR=$APPDIR
+export IPYCALC_CONFIG_HOME=$CONFIG_HOME
+export IPYCALC_KITTY=$APPDIR/usr/lib/kitty.app/bin/kitty
+export IPYCALC_KITTEN=$APPDIR/usr/lib/kitty.app/bin/kitten
+export PATH=$APPDIR/usr/lib/kitty.app/bin:$PATH
+if [ -n "${PYTHONPATH:-}" ]; then
+    export PYTHONPATH=$PACKAGE_ROOT:$PYTHONPATH
+else
+    export PYTHONPATH=$PACKAGE_ROOT
+fi
+
+exec "$PYTHON" -m ipycalc.launcher "$@"
+
