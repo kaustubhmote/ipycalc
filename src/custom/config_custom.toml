@@ -1,6 +1,0 @@
-[modules]
-fft = 'numpy.fft'
-random = 'numpy.random'
-
-[functions]
-expm = 'scipy.linalg'
