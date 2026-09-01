@@ -20,4 +20,3 @@ def test_bootstrap_starts_ipython_with_extension(monkeypatch) -> None:
         "--ext=ipycalc.extension",
         "--colors=NoColor",
     ]
-

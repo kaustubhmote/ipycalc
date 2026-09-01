@@ -44,4 +44,3 @@ def sip(seed=0, monthly_investment=0, years=0, annual_interest_percent=0):
         time_blocks=12 * years,
         interest_per_block=annual_interest_percent / 1200,
     )
-

@@ -29,4 +29,3 @@ def resource_path(*parts: str) -> Path:
 
 def package_root() -> Path:
     return Path(__file__).resolve().parents[1]
-

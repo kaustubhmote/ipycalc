@@ -21,4 +21,3 @@ class ReadyPrompt(Prompts):
 def set_prompt(ipython, ready: bool) -> None:
     prompt_class = ReadyPrompt if ready else LoadingPrompt
     ipython.prompts = prompt_class(ipython)
-

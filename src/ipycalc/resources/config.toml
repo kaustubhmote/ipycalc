@@ -25,4 +25,3 @@ hist = "matplotlib.pyplot"
 scatter = "matplotlib.pyplot"
 imshow = "matplotlib.pyplot"
 ufloat = "uncertainties"
-

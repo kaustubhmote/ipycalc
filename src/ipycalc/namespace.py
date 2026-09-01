@@ -105,4 +105,3 @@ def load_namespace(env: Mapping[str, str] | None = None) -> LoadResult:
     except Exception as exc:
         errors.append(LoadError("builtins", "unit", str(exc)))
     return LoadResult(namespace=namespace, errors=tuple(errors))
-

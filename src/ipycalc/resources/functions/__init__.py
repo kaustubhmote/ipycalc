@@ -1,2 +1,1 @@
 """Example user functions."""
-

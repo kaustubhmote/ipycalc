@@ -74,4 +74,3 @@ class _BackendICatAgg(_Backend):
     def show(cls, *args, **kwargs):
         super().show(*args, **kwargs)
         Gcf.destroy_all()
-

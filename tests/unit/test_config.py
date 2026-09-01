@@ -46,4 +46,3 @@ def test_init_user_config_never_overwrites_files(tmp_path: Path) -> None:
     assert created_again == []
     assert len(skipped_again) == 2
     assert created[0].read_text(encoding="utf-8") == original
-

@@ -13,4 +13,3 @@ def load_constants() -> dict[str, object]:
         "hbar": 1.054571817e-34,
         "π": np.pi,
     }
-

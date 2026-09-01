@@ -19,4 +19,3 @@ def test_validate_current_reports_every_missing_import() -> None:
         "module_that_does_not_exist_two",
     )
     assert len(report.errors) == 2
-

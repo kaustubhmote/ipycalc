@@ -1,2 +1,1 @@
 """Files bundled with IPyCalc."""
-

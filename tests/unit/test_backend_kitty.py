@@ -34,4 +34,3 @@ def test_show_sends_png_bytes_to_icat(monkeypatch) -> None:
     assert calls[0][0] == ["kitten", "icat"]
     assert calls[0][1] == ("--align", "left")
     assert calls[0][2].startswith(b"\x89PNG")
-
