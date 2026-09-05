@@ -355,7 +355,7 @@ Acceptance criteria:
 
 ### Phase 6: generate the AppDir and AppImage
 
-Create the tracked templates and reproducible build script. Download the pinned Kitty archive, verify it, assemble the AppDir, and call appimagetool.
+Create the tracked templates and build script. Reuse verified downloads by default. Offer an interactive upstream check, download only newer Kitty and appimagetool releases, verify their GitHub SHA-256 digests, assemble the AppDir, and call appimagetool.
 
 Acceptance criteria:
 
@@ -480,5 +480,5 @@ The AppImage work is complete when all these statements are true:
 - Matplotlib figures render inside the bundled Kitty terminal.
 - A second launch focuses the existing window.
 - The AppImage contains Kitty and IPyCalc code but no user-facing Python interpreter. Kitty may contain its private runtime libraries.
-- The build uses pinned, checksum-verified inputs.
+- The build uses cached, checksum-verified inputs by default and downloads upstream assets only when the user requests a check and a newer release exists.
 - CI reproduces and tests the AppImage from an empty checkout.

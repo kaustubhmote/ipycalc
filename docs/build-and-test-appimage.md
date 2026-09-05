@@ -51,7 +51,7 @@ uv run ruff check src/ipycalc tests
 MPLCONFIGDIR=/tmp/ipycalc-matplotlib uv run pytest
 ```
 
-The test run should report 27 passing tests.
+The test run should report 31 passing tests.
 
 Build the wheel and source archive:
 
@@ -72,14 +72,30 @@ Build the AppImage:
 packaging/appimage/build.sh
 ```
 
+The script asks whether to check for newer Kitty and appimagetool releases. Press Enter to use the existing verified files in `build/downloads/`.
+
 The build script performs these actions:
 
-1. Reads pinned versions and checksums from `packaging/appimage/versions.env`.
-2. Downloads Kitty, appimagetool, and the AppImage runtime when they are absent from `build/downloads/`.
-3. Verifies every downloaded file with SHA-256.
-4. Creates `build/IPyCalc.AppDir`.
-5. Validates the desktop and AppStream metadata.
-6. Writes `dist/IPyCalc-1.0.0-x86_64.AppImage`.
+1. Finds the newest verified Kitty and appimagetool files in `build/downloads/`.
+2. Checks upstream only when you answer `y`.
+3. Downloads an upstream asset only when its version or release date is newer than the cached asset.
+4. Verifies pinned assets against `packaging/appimage/versions.env` and newer assets against GitHub release metadata.
+5. Downloads the pinned AppImage runtime only when it is absent.
+6. Creates `build/IPyCalc.AppDir`.
+7. Validates the desktop and AppStream metadata.
+8. Writes `dist/IPyCalc-1.0.0-x86_64.AppImage`.
+
+To skip the prompt and all upstream checks, run:
+
+```bash
+IPYCALC_REFRESH_DOWNLOADS=never packaging/appimage/build.sh
+```
+
+To check upstream without a prompt, run:
+
+```bash
+IPYCALC_REFRESH_DOWNLOADS=always packaging/appimage/build.sh
+```
 
 Inspect the result:
 
@@ -463,6 +479,8 @@ If the saved path is wrong, configure it again:
 ```
 
 If plotting reports that Kitty is unavailable, confirm that you started IPyCalc through the AppImage. The backend intentionally rejects a shell that lacks the bundled Kitty tools.
+
+If `show()` runs but no image appears, rebuild the AppImage from the current `appimage` branch. Builds before the inline-output fix captured Kitty's graphics commands instead of writing them to the terminal.
 
 If a stale control socket remains after a crash, close every IPyCalc window before deleting it. The socket is at `$XDG_RUNTIME_DIR/ipycalc/kitty.sock` when `XDG_RUNTIME_DIR` is set. Otherwise it is at `/tmp/ipycalc-$UID/kitty.sock`.
 

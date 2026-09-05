@@ -6,7 +6,21 @@ Run the build from the repository root:
 packaging/appimage/build.sh
 ```
 
-The script downloads checksum-pinned Kitty, appimagetool, and AppImage runtime artifacts. It writes temporary files under `build/` and the finished AppImage under `dist/`.
+The script reuses verified Kitty and appimagetool files from `build/downloads/`. It asks whether to check for newer upstream releases. The default answer keeps the cached files. If a newer release exists, the script downloads it and verifies the asset against the SHA-256 digest in GitHub's release metadata.
+
+Set `IPYCALC_REFRESH_DOWNLOADS=always` to check without a prompt. Set it to `never` for an offline or automated build:
+
+```bash
+IPYCALC_REFRESH_DOWNLOADS=never packaging/appimage/build.sh
+```
+
+The script writes temporary files under `build/` and the finished AppImage under `dist/`.
+
+To populate or update only the download cache, run:
+
+```bash
+packaging/appimage/build.sh --downloads-only
+```
 
 To inspect the generated AppDir without downloading appimagetool, run:
 

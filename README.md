@@ -152,7 +152,9 @@ Build from the repository root:
 packaging/appimage/build.sh
 ```
 
-The build script verifies pinned checksums for Kitty, appimagetool, and the AppImage runtime. It writes the AppDir under `build/` and the AppImage under `dist/`.
+The build script reuses verified Kitty and appimagetool files from `build/downloads/`. In an interactive shell, it asks whether to check for newer upstream releases. Press Enter to keep the cached files. The script verifies new release assets against the SHA-256 digests in GitHub's release metadata.
+
+It writes the AppDir under `build/` and the AppImage under `dist/`.
 
 See [the AppImage build guide](packaging/appimage/README.md) for an AppDir-only build and local archive overrides. Follow [the complete build and test guide](docs/build-and-test-appimage.md) to configure environments and test every user-visible feature.
 

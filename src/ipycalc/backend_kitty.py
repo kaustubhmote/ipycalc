@@ -27,14 +27,21 @@ def _icat_command() -> list[str]:
     raise RuntimeError("IPyCalc cannot find kitten or kitty; start plotting from the IPyCalc AppImage")
 
 
-def _run(command: list[str], *arguments: str, input_bytes: bytes | None = None) -> str:
+def _query(command: list[str], *arguments: str) -> str:
     completed = subprocess.run(
         [*command, *arguments],
-        input=input_bytes,
         capture_output=True,
         check=True,
     )
     return completed.stdout.decode("utf-8", errors="replace").strip()
+
+
+def _display(command: list[str], png: bytes) -> None:
+    subprocess.run(
+        [*command, "--align", "left"],
+        input=png,
+        check=True,
+    )
 
 
 class FigureManagerICat(FigureManagerBase):
@@ -43,7 +50,7 @@ class FigureManagerICat(FigureManagerBase):
         if os.environ.get("MPLBACKEND_KITTY_SIZING", "automatic") != "manual":
             try:
                 rows = max(shutil.get_terminal_size(fallback=(80, 24)).lines, 1)
-                width, height = (int(value) for value in _run(command, "--print-window-size").split("x", 1))
+                width, height = (int(value) for value in _query(command, "--print-window-size").split("x", 1))
                 height -= int(3 * (height / rows))
                 dpi = self.canvas.figure.dpi
                 self.canvas.figure.set_size_inches(width / dpi, height / dpi)
@@ -51,7 +58,7 @@ class FigureManagerICat(FigureManagerBase):
                 pass
         with BytesIO() as buffer:
             self.canvas.figure.savefig(buffer, format="png", facecolor="#001e26")
-            _run(command, "--align", "left", input_bytes=buffer.getvalue())
+            _display(command, buffer.getvalue())
 
 
 class FigureCanvasICat(FigureCanvasAgg):
