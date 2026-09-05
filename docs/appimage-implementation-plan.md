@@ -285,7 +285,7 @@ Set `Terminal=false` in the desktop file because the application opens its own K
 
 After the new launcher passes its integration tests:
 
-- Remove the interactive Conda installer from `install.sh`.
+- Delete `install.sh`; document `uv sync --group dev` as the development setup command.
 - Remove hard-coded checkout paths from all launchers.
 - Remove `src/custom/install_custom_conda_env.sh` from the AppImage path.
 - Replace the Conda YAML example with the managed uv project template.

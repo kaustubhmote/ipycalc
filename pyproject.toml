@@ -44,7 +44,6 @@ include = [
     "/LICENSE.md",
     "/README.md",
     "/THIRD_PARTY_NOTICES.md",
-    "/install.sh",
     "/ipycalc.gif",
     "/pyproject.toml",
     "/uv.lock",
