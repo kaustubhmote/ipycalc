@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=IPyCalc
+Comment=Open a focused IPython calculator
+Exec=ipycalc
+Icon=org.ipycalc.IPyCalc
+Terminal=false
+Categories=Utility;
+StartupWMClass=org.ipycalc.IPyCalc

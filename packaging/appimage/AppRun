@@ -1,0 +1,123 @@
+#!/bin/sh
+set -eu
+
+SELF_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+APPDIR=${APPDIR:-$SELF_DIR}
+PACKAGE_ROOT=$APPDIR/opt/ipycalc
+
+if [ -n "${IPYCALC_CONFIG_HOME:-}" ]; then
+    CONFIG_HOME=$IPYCALC_CONFIG_HOME
+elif [ -n "${XDG_CONFIG_HOME:-}" ]; then
+    CONFIG_HOME=$XDG_CONFIG_HOME/ipycalc
+else
+    CONFIG_HOME=${HOME:?HOME is not set}/.config/ipycalc
+fi
+ENVIRONMENT_HOME=$CONFIG_HOME/environment
+ENVIRONMENT_PROJECT=$ENVIRONMENT_HOME/pyproject.toml
+ENVIRONMENT_TEMPLATE=$PACKAGE_ROOT/ipycalc/resources/environment.pyproject.toml
+MANAGED_PYTHON=$ENVIRONMENT_HOME/.venv/bin/python
+
+init_environment() {
+    if ! command -v uv >/dev/null 2>&1; then
+        echo "IPyCalc: uv is required to create the default Python environment." >&2
+        echo "Install uv from https://docs.astral.sh/uv/ and run this command again." >&2
+        exit 1
+    fi
+    mkdir -p "$CONFIG_HOME" "$ENVIRONMENT_HOME"
+    chmod 700 "$CONFIG_HOME" "$ENVIRONMENT_HOME"
+    if [ ! -e "$ENVIRONMENT_PROJECT" ]; then
+        cp "$ENVIRONMENT_TEMPLATE" "$ENVIRONMENT_PROJECT"
+        chmod 600 "$ENVIRONMENT_PROJECT"
+    elif [ ! -f "$ENVIRONMENT_PROJECT" ]; then
+        echo "IPyCalc: $ENVIRONMENT_PROJECT is not a regular file." >&2
+        exit 1
+    fi
+    uv sync --project "$ENVIRONMENT_HOME"
+    if [ ! -f "$MANAGED_PYTHON" ] || [ ! -x "$MANAGED_PYTHON" ]; then
+        echo "IPyCalc: uv did not create $MANAGED_PYTHON." >&2
+        exit 1
+    fi
+}
+
+ONE_SHOT_PYTHON=""
+CONFIGURE_PYTHON=""
+INIT_ENVIRONMENT=0
+EXPECT=""
+for ARG in "$@"; do
+    if [ "$EXPECT" = "python" ]; then
+        ONE_SHOT_PYTHON=$ARG
+        EXPECT=""
+        continue
+    fi
+    if [ "$EXPECT" = "configure" ]; then
+        CONFIGURE_PYTHON=$ARG
+        EXPECT=""
+        continue
+    fi
+    case "$ARG" in
+        --python)
+            EXPECT="python"
+            ;;
+        --python=*)
+            ONE_SHOT_PYTHON=${ARG#--python=}
+            ;;
+        --configure-python)
+            EXPECT="configure"
+            ;;
+        --configure-python=*)
+            CONFIGURE_PYTHON=${ARG#--configure-python=}
+            ;;
+        --init-environment)
+            INIT_ENVIRONMENT=1
+            ;;
+    esac
+done
+
+if [ -n "$EXPECT" ]; then
+    echo "IPyCalc: $EXPECT requires a Python path" >&2
+    exit 2
+fi
+
+if [ "$INIT_ENVIRONMENT" -eq 1 ] && { [ -n "$CONFIGURE_PYTHON" ] || [ -n "$ONE_SHOT_PYTHON" ]; }; then
+    echo "IPyCalc: --init-environment cannot be combined with --python or --configure-python." >&2
+    exit 2
+fi
+
+if [ "$INIT_ENVIRONMENT" -eq 1 ]; then
+    init_environment
+    PYTHON=$MANAGED_PYTHON
+elif [ -n "$CONFIGURE_PYTHON" ]; then
+    PYTHON=$CONFIGURE_PYTHON
+elif [ -n "$ONE_SHOT_PYTHON" ]; then
+    PYTHON=$ONE_SHOT_PYTHON
+elif [ -n "${IPYCALC_PYTHON:-}" ]; then
+    PYTHON=$IPYCALC_PYTHON
+elif [ -f "$CONFIG_HOME/python-path" ]; then
+    IFS= read -r PYTHON < "$CONFIG_HOME/python-path" || PYTHON=""
+else
+    if [ ! -f "$MANAGED_PYTHON" ] || [ ! -x "$MANAGED_PYTHON" ]; then
+        init_environment
+    fi
+    PYTHON=$MANAGED_PYTHON
+fi
+
+if [ -z "${PYTHON:-}" ] || [ ! -f "$PYTHON" ] || [ ! -x "$PYTHON" ]; then
+    echo "IPyCalc: no usable Python interpreter is configured." >&2
+    echo "Run: $0 --init-environment" >&2
+    echo "Or run: $0 --configure-python /absolute/path/to/python" >&2
+    exit 1
+fi
+
+export IPYCALC_APPDIR=$APPDIR
+export IPYCALC_CONFIG_HOME=$CONFIG_HOME
+export IPYCALC_MANAGED_ENVIRONMENT=$ENVIRONMENT_HOME
+export IPYCALC_KITTY=$APPDIR/usr/lib/kitty.app/bin/kitty
+export IPYCALC_KITTEN=$APPDIR/usr/lib/kitty.app/bin/kitten
+export PATH=$APPDIR/usr/lib/kitty.app/bin:$PATH
+if [ -n "${PYTHONPATH:-}" ]; then
+    export PYTHONPATH=$PACKAGE_ROOT:$PYTHONPATH
+else
+    export PYTHONPATH=$PACKAGE_ROOT
+fi
+
+exec "$PYTHON" -m ipycalc.launcher "$@"

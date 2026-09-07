@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ipycalc"
+version = "0.1"
+description = "A focused IPython calculator in a Kitty terminal"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE.md" }
+authors = [{ name = "Kaustubh R. Mote" }]
+dependencies = [
+    "ipython>=8.20",
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "pendulum>=3.0",
+    "pint>=0.23",
+    "rich>=13.7",
+    "scipy>=1.11",
+    "uncertainties>=3.1",
+]
+
+[project.scripts]
+ipycalc = "ipycalc.launcher:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.12",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ipycalc"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/.github",
+    "/docs",
+    "/packaging",
+    "/src/ipycalc",
+    "/tests",
+    "/LICENSE.md",
+    "/README.md",
+    "/THIRD_PARTY_NOTICES.md",
+    "/ipycalc.gif",
+    "/pyproject.toml",
+    "/uv.lock",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff.lint]
+ignore = ["BLE001"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/ipycalc/environment.py" = ["UP036"]
