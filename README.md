@@ -1,8 +1,8 @@
 # IPyCalc
 
-IPyCalc opens a focused IPython shell in a Kitty terminal. It loads common scientific names in the background and renders Matplotlib figures inside the terminal.
+IPyCalc opens a focused IPython shell in a Kitty terminal. It loads common scientific names in the background and renders Matplotlib figures inside the terminal. You can start typing without being blocked for the duration it requires for these modules to be load. It ensures that you do not have more than one open at a time.
 
-![IPyCalc demonstration](ipycalc.gif)
+https://github.com/user-attachments/assets/420ff0e2-fced-4da8-9bf3-a9b25637a557
 
 ## What the AppImage contains
 
